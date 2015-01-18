@@ -1,6 +1,9 @@
 package model;
 
 public class NumberConstraint implements Constraint{
+	//in euro
+	public static final double PRICE = 5;
+	
 	private int numEntries;
 
 	
@@ -23,9 +26,11 @@ public class NumberConstraint implements Constraint{
 		}
 		return false;
 	}
+	
 	public int getNumEntries() {
 		return numEntries;
 	}
+	
 	public void setNumEntries(int numEntries) {
 		this.numEntries = numEntries;
 	}

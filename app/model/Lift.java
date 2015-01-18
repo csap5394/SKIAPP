@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Lift {
 	//private Person person;
@@ -12,7 +13,7 @@ public class Lift {
 	private String typ;
 	// anzahl der pläzte im lift
 	private int numberPlaces;
-	// anzal der nicht privilegierten plätze, die zur verfügung stehen
+	// anzahl der nicht privilegierten plätze, die zur verfügung stehen
 	private int nonPriorityPlaces;
 	// wie schnell sich der Lift dreht, wie oft sich die schranken drehen
 	private double barOpeningInterval;
@@ -24,40 +25,71 @@ public class Lift {
 	private int setPriorityPlaces;
 
 
-	private ArrayList person;
+	private List <Person> person;
 	//List <Person> allowedPersonLift = new ArrayList<Person>();
-	
-	public Lift(int maxPriorityPlaces, int numberPlaces){
-		person = new ArrayList();
+
+	public Lift() {
+		person = new ArrayList<Person>();
 		this.personInQueue = 0;
+	} 
+
+	public Lift(int maxPriorityPlaces, int numberPlaces){
+		this();
 		this.maxPriorityPlaces = maxPriorityPlaces;
 		this.numberPlaces = numberPlaces;
 	}
+	
+	
 	
 	//wenn sich person registriert, hänge ihn an liste an
 	public void registerPerson(Person p){
 		person.add(p);
 	}
 	
-	public void incrementQueue(){
+	/**
+	 *  kontrolliert ob person für zugang berechtigt ist. Falls nicht, 
+	 *  wird Object in toBeDelted zwischengespeichert und anschließend
+	 *  aus der liste person geloescht.
+	 *  
+	 *  TODO: Funktion wird peridisch aufgerufen 
+	 *  
+	 */
+	public void checkPeople(){
+		List <Person> toBeDeleted = new ArrayList<Person>();
 		for(int i = 0; i < person.size(); i++){
 			Person p = (Person)person.get(i);
-			if (p.getNumConstrait().checkEntryAllowed() == false) {
-				int j = person.indexOf(p);
-				if(j >= 0){
-					person.remove(j);
-				}
-				else {
-					personInQueue++;
+			Map<Lift, List<Constraint>> map = p.getMap();
+			boolean remove = true;
+			for(Lift lift: map.keySet()) {
+				if(lift.equals(this)) {
+					List<Constraint> constraints = map.get(lift);
+					for(Constraint constraint: constraints) {
+						if(constraint.checkEligible()) {
+							remove = false;
+							break;
+						}
+					}
 				}
 			}
+			
+			if (remove) {
+				toBeDeleted.add(p);
+			}
 		}
+		for(Person p: toBeDeleted) {
+			person.remove(p);
+		}
+	}
+	
+	public void incrementQueue(){
+		personInQueue++;
 		
 	}
 	
 	public void decrementQueue(){
-
+		personInQueue--;
 	}
+	
 	/**
 	 * Wenn weniger in der Queue sind als MAXPriorityPlätze verfügbar, werden <= 
 	 * PriorytySchranken freigegegbbn und die Queue auf Null gesetzt. Dafür die Mehrdifferenz
@@ -69,29 +101,38 @@ public class Lift {
 	 * @return
 	 */
 	public void maxOpenPlaces(){
-		if(personInQueue <= maxPriorityPlaces){
+		if(personInQueue < maxPriorityPlaces){
 			setNonPriorityPlaces(getNumberPlaces() - personInQueue);
 			openNonPriorPlaces(getNonPriorityPlaces());
 			openPriorPlaces(getPersonInQueue());
-			setPersonInQueue(0);
+			
 			
 		}
-		if(personInQueue >= maxPriorityPlaces){
+		else {
 			setNonPriorityPlaces(getNumberPlaces() - maxPriorityPlaces);
 			openNonPriorPlaces(getNonPriorityPlaces());
 			openPriorPlaces(maxPriorityPlaces);
-			setPersonInQueue(getPersonInQueue() - getSetPriorityPlaces());
 		}
 		
 			
 	}
 	
-
+	/**
+	 * Theoretische Mehtoden, die nicht ausgeführt werden kann
+	 * @param personInQueue2 anzahl der zu oeffnenden tueren, der
+	 * prioroty plaetze 
+	 */
 	private void openPriorPlaces(int personInQueue2) {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
+	
+	/**
+	 * Theoresche Methode, die nicht ausgeführt werden kann
+	 * @param personInQueue2 azhal der zu oeffnend. tueren, der
+	 * nicht piror. plaetze 
+	 */
 	private void openNonPriorPlaces(int personInQueue2) {
 		// TODO Auto-generated method stub
 		
@@ -99,10 +140,6 @@ public class Lift {
 
 	public int getNumberPlaces() {
 		return numberPlaces;
-	}
-
-	public void setNumberPlaces(int numberPlaces) {
-		this.numberPlaces = numberPlaces;
 	}
 
 	public int getNonPriorityPlaces() {
@@ -149,7 +186,7 @@ public class Lift {
 		return numberPlaces;
 	}
 
-	public void setNumberPlaes(int numberPlaces) {
+	public void setNumberPlaces(int numberPlaces) {
 		this.numberPlaces = numberPlaces;
 	}
 
@@ -177,11 +214,11 @@ public class Lift {
 		this.maxPriorityPlaces = maxPriorityPlaces;
 	}
 
-	public ArrayList getPerson() {
+	public List<Person> getPerson() {
 		return person;
 	}
 
-	public void setPerson(ArrayList person) {
+	public void setPerson(List<Person> person) {
 		this.person = person;
 	}
 	public int getSetPriorityPlaces() {

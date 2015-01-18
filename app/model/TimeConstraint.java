@@ -1,41 +1,51 @@
 package model;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
 
 public class TimeConstraint implements Constraint{
-	private Date howLong;
+	private Calendar howLong;
 	
-	public TimeConstraint(Date howLong){
+	
+	
+	public TimeConstraint(Calendar howLong){
 		this.howLong = howLong;
 	}
 	
 	@Override
 	public boolean checkEntryAllowed() {
-		// TODO Auto-generated method stub
-		return false;
+		return checkEligible();
 	}
 
 
-
+	/**
+	 * prueft ob tages/halbtageskarte gueltig ist
+	 * cmp == 0: zeit ist gleich
+	 * cmp < 0:  zeit ist ok
+	 * cmp >: zeit ist abgelaufen 
+	 */
 	@Override
 	public boolean checkEligible() {
-		// TODO Auto-generated method stub
-		return false;
+		Calendar now = Calendar.getInstance();
+		int cmp = now.compareTo(howLong);
+		if(cmp == 0) {
+			return false;
+		} else if(cmp < 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-
-
-	
-	public Date getHowLong() {
+	public Calendar getHowLong() {
 		return howLong;
 	}
 
-	public void setHowLong(Date howLong) {
+	public void setHowLong(Calendar howLong) {
 		this.howLong = howLong;
 	}
-
 
 
 
